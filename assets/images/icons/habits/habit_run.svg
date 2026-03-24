@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="Run habit icon">
+  <rect width="256" height="256" rx="56" fill="#EEF6FF"/>
+  <circle cx="158" cy="62" r="18" fill="#0C7B93"/>
+  <path d="M124 108l44 18 24 44M124 108l-20 32-30 12m50-44l-8 52 38 30" fill="none" stroke="#0C7B93" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

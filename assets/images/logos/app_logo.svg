@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Habit Tracker logo">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#0C7B93"/>
+      <stop offset="100%" stop-color="#00A8CC"/>
+    </linearGradient>
+  </defs>
+  <rect x="24" y="24" width="464" height="464" rx="128" fill="url(#g)"/>
+  <circle cx="256" cy="200" r="76" fill="#FFFFFF" opacity="0.95"/>
+  <path d="M152 304c25 43 63 64 104 64s79-21 104-64" fill="none" stroke="#FFFFFF" stroke-width="28" stroke-linecap="round"/>
+</svg>

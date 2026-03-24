@@ -1,0 +1,82 @@
+{
+  "project_info": {
+    "project_number": "804353650496",
+    "project_id": "shopingcardapp",
+    "storage_bucket": "shopingcardapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:804353650496:android:027d743dbf9e77e3ba94a5",
+        "android_client_info": {
+          "package_name": "com.example.shopping_cart_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "804353650496-i9dgialhvv0eurhlj0adl6gmdfn7gk70.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAvhLfu5O_qafcDBIFF6OGmoqQWMJ-FpwA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "804353650496-i9dgialhvv0eurhlj0adl6gmdfn7gk70.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "804353650496-lqe8qb7k82pcv58jjhboidhhrqn1mdam.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.shoppingCartApp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:804353650496:android:b4f24b97a385970dba94a5",
+        "android_client_info": {
+          "package_name": "com.habittracker.habit_tracker_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "804353650496-i9dgialhvv0eurhlj0adl6gmdfn7gk70.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAvhLfu5O_qafcDBIFF6OGmoqQWMJ-FpwA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "804353650496-i9dgialhvv0eurhlj0adl6gmdfn7gk70.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "804353650496-lqe8qb7k82pcv58jjhboidhhrqn1mdam.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.shoppingCartApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
