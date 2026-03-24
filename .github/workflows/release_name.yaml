@@ -67,6 +67,17 @@ jobs:
 
       - name: Build APK
         run: flutter build apk --release
+
+      - name: Validate Firebase distribution secrets
+        shell: bash
+        env:
+          FIREBASE_APP_ID_ANDROID: ${{ secrets.FIREBASE_APP_ID_ANDROID }}
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          FIREBASE_TESTER_GROUPS: ${{ secrets.FIREBASE_TESTER_GROUPS }}
+        run: |
+          test -n "$FIREBASE_APP_ID_ANDROID" || { echo "Missing FIREBASE_APP_ID_ANDROID"; exit 1; }
+          test -n "$FIREBASE_SERVICE_ACCOUNT" || { echo "Missing FIREBASE_SERVICE_ACCOUNT"; exit 1; }
+          test -n "$FIREBASE_TESTER_GROUPS" || { echo "Missing FIREBASE_TESTER_GROUPS"; exit 1; }
         
       - name: Distribute APK to Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1
