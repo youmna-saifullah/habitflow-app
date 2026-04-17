@@ -8,7 +8,7 @@ void main() {
   ) async {
     await tester.pumpWidget(const HabitTrackerApp());
 
-    expect(find.text('Habit'), findsOneWidget);
-    expect(find.text('Tracker'), findsOneWidget);
+    expect(find.text('HabitFlow'), findsOneWidget);
+    expect(find.text('Build momentum every day'), findsOneWidget);
   });
 }

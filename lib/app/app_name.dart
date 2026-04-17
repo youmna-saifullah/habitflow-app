@@ -4,6 +4,9 @@ import 'package:habit_tracker_app/core/theme/app_theme.dart';
 import 'package:habit_tracker_app/core/router/app_router.dart';
 import 'package:habit_tracker_app/core/providers/theme_provider.dart';
 
+import '../features/habit/presentation/providers/habit_provider.dart';
+import 'injection_container.dart';
+
 /// Application display name.
 const String kAppName = 'Habit Tracker';
 
@@ -15,8 +18,21 @@ class HabitTrackerApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Global providers are registered here to keep feature modules independent.
-    return ChangeNotifierProvider<ThemeProvider>(
-      create: (BuildContext context) => ThemeProvider(),
+    return MultiProvider(
+      providers: <ChangeNotifierProvider<dynamic>>[
+        ChangeNotifierProvider<ThemeProvider>(
+          create: (BuildContext context) => ThemeProvider(),
+        ),
+        ChangeNotifierProvider<HabitProvider>(
+          create: (BuildContext context) {
+            final HabitProvider provider = HabitProvider(
+              InjectionContainer.habitRepository,
+            );
+            provider.watchHabits();
+            return provider;
+          },
+        ),
+      ],
       // Consumer listens to theme changes and rebuilds MaterialApp accordingly.
       child: Consumer<ThemeProvider>(
         builder:

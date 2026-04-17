@@ -1,111 +1,225 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/router/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_style.dart';
 import '../../../../core/widgets/snackbars/app_snackbar.dart';
+import '../../../habit/presentation/providers/habit_provider.dart';
 
-/// Screen that hosts reusable add-habit form UI placeholders.
-class AddHabitScreen extends StatelessWidget {
+/// Form screen used to create and persist a new habit.
+class AddHabitScreen extends StatefulWidget {
   /// Creates an add-habit screen.
   const AddHabitScreen({super.key});
 
   @override
+  State<AddHabitScreen> createState() => _AddHabitScreenState();
+}
+
+class _AddHabitScreenState extends State<AddHabitScreen> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _motivationController = TextEditingController();
+
+  int _targetDays = 4;
+  String _selectedColorHex = '#0F766E';
+  bool _isSaving = false;
+
+  static const List<String> _palette = <String>[
+    '#0F766E',
+    '#1D4ED8',
+    '#F97316',
+    '#EF4444',
+    '#9333EA',
+  ];
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _motivationController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _saveHabit() async {
+    final FormState? formState = _formKey.currentState;
+    if (formState == null || !formState.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      await context.read<HabitProvider>().addHabit(
+        title: _titleController.text.trim(),
+        motivation: _motivationController.text.trim(),
+        colorHex: _selectedColorHex,
+        targetDaysPerWeek: _targetDays,
+      );
+
+      if (!mounted) {
+        return;
+      }
+      AppSnackbar.show(context, 'Habit created successfully');
+      context.go(RouteNames.HOME);
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      AppSnackbar.show(context, 'Failed to create habit. Please retry.');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F2F5),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: AppConstants.pagePadding,
-          child: Column(
-            children: <Widget>[
-              Row(
-                children: <Widget>[
-                  IconButton(
-                    onPressed: () => context.go(RouteNames.HOME),
-                    icon: const Icon(Icons.arrow_back_rounded),
-                  ),
-                  Expanded(
-                    child: Text(
-                      'New Habit',
-                      textAlign: TextAlign.center,
-                      style: AppTextStyle.headingSmall.copyWith(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w700,
-                      ),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    IconButton(
+                      onPressed: () => context.go(RouteNames.HOME),
+                      icon: const Icon(Icons.arrow_back_rounded),
                     ),
-                  ),
-                  IconButton(
-                    onPressed: () {},
-                    icon: const Icon(Icons.search_rounded),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              _HabitFieldRow(hint: 'Habit Name'),
-              const SizedBox(height: 12),
-              const _HabitFieldRow(
-                hint: 'Frequency',
-                value: 'Weekly',
-                trailingIcon: Icons.keyboard_arrow_down_rounded,
-              ),
-              const SizedBox(height: 12),
-              _HabitFieldRow(
-                hint: 'Color',
-                trailing: Container(
-                  width: 14,
-                  height: 14,
+                    Text('New Habit', style: AppTextStyle.headingSmall),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.circular(4),
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text('Habit name', style: AppTextStyle.bodySmall),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _titleController,
+                        validator: (String? value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please enter a habit name';
+                          }
+                          return null;
+                        },
+                        decoration: const InputDecoration(
+                          hintText: 'Example: Morning Walk',
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Text('Motivation', style: AppTextStyle.bodySmall),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _motivationController,
+                        minLines: 2,
+                        maxLines: 3,
+                        decoration: const InputDecoration(
+                          hintText: 'Why this habit matters to you',
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Text(
+                        'Target days per week',
+                        style: AppTextStyle.bodySmall,
+                      ),
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<int>(
+                        initialValue: _targetDays,
+                        items: List<DropdownMenuItem<int>>.generate(7, (
+                          int index,
+                        ) {
+                          final int value = index + 1;
+                          return DropdownMenuItem<int>(
+                            value: value,
+                            child: Text('$value days'),
+                          );
+                        }),
+                        onChanged: (int? value) {
+                          if (value == null) {
+                            return;
+                          }
+                          setState(() {
+                            _targetDays = value;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 14),
+                      Text('Color', style: AppTextStyle.bodySmall),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: _palette.map((String hex) {
+                          final bool isSelected = _selectedColorHex == hex;
+                          return GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _selectedColorHex = hex;
+                              });
+                            },
+                            child: Container(
+                              width: 34,
+                              height: 34,
+                              decoration: BoxDecoration(
+                                color: _hexToColor(hex),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: isSelected
+                                      ? AppColors.lightOnBackground
+                                      : Colors.transparent,
+                                  width: 2,
+                                ),
+                              ),
+                              child: isSelected
+                                  ? const Icon(
+                                      Icons.check,
+                                      size: 16,
+                                      color: Colors.white,
+                                    )
+                                  : null,
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              _HabitFieldRow(hint: 'Motivation'),
-              const SizedBox(height: 12),
-              const _HabitFieldRow(
-                hint: 'Alarm',
-                trailingIcon: Icons.alarm_rounded,
-                trailingIconColor: Color(0xFFCFD8DC),
-              ),
-              const SizedBox(height: 12),
-              const _HabitFieldRow(
-                hint: 'Priority',
-                value: 'High',
-                trailingIcon: Icons.keyboard_arrow_down_rounded,
-              ),
-              const SizedBox(height: 24),
-              OutlinedButton.icon(
-                onPressed: () {
-                  AppSnackbar.show(
-                    context,
-                    'Habit draft saved (UI placeholder)',
-                  );
-                  context.go(RouteNames.HOME);
-                },
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: AppColors.primary),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 10,
+                const SizedBox(height: 18),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: _isSaving ? null : _saveHabit,
+                    icon: _isSaving
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.save_outlined),
+                    label: Text(_isSaving ? 'Saving...' : 'Save Habit'),
                   ),
                 ),
-                icon: const Icon(Icons.add, size: 20),
-                label: Text(
-                  'Save Habit',
-                  style: AppTextStyle.bodyRegular.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -113,65 +227,8 @@ class AddHabitScreen extends StatelessWidget {
   }
 }
 
-/// Reusable single-line form row for the static New Habit layout.
-class _HabitFieldRow extends StatelessWidget {
-  /// Creates a field row.
-  const _HabitFieldRow({
-    required this.hint,
-    this.value,
-    this.trailing,
-    this.trailingIcon,
-    this.trailingIconColor,
-  });
-
-  /// Left hint label.
-  final String hint;
-
-  /// Optional right value text.
-  final String? value;
-
-  /// Optional right trailing widget.
-  final Widget? trailing;
-
-  /// Optional right trailing icon.
-  final IconData? trailingIcon;
-
-  /// Optional icon color override.
-  final Color? trailingIconColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 52,
-      padding: const EdgeInsets.symmetric(horizontal: 14),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        children: <Widget>[
-          Expanded(
-            child: Text(
-              hint,
-              style: AppTextStyle.bodyRegular.copyWith(
-                color: AppColors.mutedText.withValues(alpha: 0.75),
-              ),
-            ),
-          ),
-          if (value case final selectedValue?)
-            Text(
-              selectedValue,
-              style: AppTextStyle.bodyRegular.copyWith(
-                color: AppColors.lightOnBackground,
-              ),
-            ),
-          if (value != null && trailingIcon != null) const SizedBox(width: 6),
-          if (trailing case final Widget trailingWidget) trailingWidget,
-          if (trailingIcon case final IconData iconData)
-            Icon(iconData, color: trailingIconColor ?? const Color(0xFFCFD8DC)),
-        ],
-      ),
-    );
-  }
+Color _hexToColor(String hex) {
+  final String sanitized = hex.replaceAll('#', '');
+  final String normalized = sanitized.length == 6 ? 'FF$sanitized' : sanitized;
+  return Color(int.parse(normalized, radix: 16));
 }

@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/router/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_style.dart';
+import '../../../habit/presentation/providers/habit_provider.dart';
 
-/// Tracker screen that displays static progress insights.
+/// Tracker screen that displays live progress insights.
 class TrackerScreen extends StatelessWidget {
   /// Creates the tracker screen.
   const TrackerScreen({super.key});
@@ -14,218 +16,182 @@ class TrackerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F2F5),
       body: SafeArea(
-        child: Padding(
-          padding: AppConstants.pagePadding,
-          child: Column(
-            children: <Widget>[
-              Row(
-                children: <Widget>[
-                  IconButton(
-                    onPressed: () => context.go(RouteNames.HOME),
-                    icon: const Icon(Icons.arrow_back_rounded),
-                  ),
-                  Expanded(
-                    child: Text(
-                      'Tracker',
-                      textAlign: TextAlign.center,
-                      style: AppTextStyle.headingSmall.copyWith(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w700,
+        child: Consumer<HabitProvider>(
+          builder:
+              (BuildContext context, HabitProvider provider, Widget? child) {
+                final int total = provider.habits.length;
+                final int done = provider.completedTodayCount;
+                final double rate = provider.completionRate;
+
+                return Padding(
+                  padding: AppConstants.pagePadding,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Row(
+                        children: <Widget>[
+                          IconButton(
+                            onPressed: () => context.go(RouteNames.HOME),
+                            icon: const Icon(Icons.arrow_back_rounded),
+                          ),
+                          Text('Tracker', style: AppTextStyle.headingSmall),
+                        ],
                       ),
-                    ),
+                      const SizedBox(height: 12),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: AppColors.border),
+                        ),
+                        child: Column(
+                          children: <Widget>[
+                            SizedBox(
+                              height: 170,
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: <Widget>[
+                                  SizedBox(
+                                    height: 150,
+                                    width: 150,
+                                    child: CircularProgressIndicator(
+                                      value: rate,
+                                      strokeWidth: 14,
+                                      backgroundColor: AppColors.primary
+                                          .withValues(alpha: 0.14),
+                                      valueColor:
+                                          const AlwaysStoppedAnimation<Color>(
+                                            AppColors.accent,
+                                          ),
+                                    ),
+                                  ),
+                                  Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: <Widget>[
+                                      Text(
+                                        '${(rate * 100).toStringAsFixed(0)}%',
+                                        style: AppTextStyle.headingMedium
+                                            .copyWith(
+                                              color: AppColors.primary,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                      ),
+                                      Text(
+                                        'completed',
+                                        style: AppTextStyle.labelMedium
+                                            .copyWith(
+                                              color: AppColors.mutedText,
+                                            ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            _MetricRow(
+                              label: 'Habits completed today',
+                              value: '$done',
+                            ),
+                            const SizedBox(height: 6),
+                            _MetricRow(
+                              label: 'Total active habits',
+                              value: '$total',
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Text('Today overview', style: AppTextStyle.bodyMedium),
+                      const SizedBox(height: 8),
+                      Expanded(
+                        child: provider.habits.isEmpty
+                            ? Center(
+                                child: Text(
+                                  'Add habits to view tracking insights.',
+                                  style: AppTextStyle.bodySmall.copyWith(
+                                    color: AppColors.mutedText,
+                                  ),
+                                ),
+                              )
+                            : ListView.separated(
+                                itemCount: provider.habits.length,
+                                separatorBuilder:
+                                    (BuildContext context, int index) {
+                                      return const SizedBox(height: 10);
+                                    },
+                                itemBuilder: (BuildContext context, int index) {
+                                  final habit = provider.habits[index];
+                                  return Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.surface,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: AppColors.border,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      children: <Widget>[
+                                        Icon(
+                                          habit.completedToday
+                                              ? Icons.check_circle
+                                              : Icons.circle_outlined,
+                                          color: habit.completedToday
+                                              ? AppColors.success
+                                              : AppColors.mutedText,
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: Text(
+                                            habit.title,
+                                            style: AppTextStyle.bodyRegular,
+                                          ),
+                                        ),
+                                        Text(
+                                          '${habit.targetDaysPerWeek}d/week',
+                                          style: AppTextStyle.labelMedium
+                                              .copyWith(
+                                                color: AppColors.mutedText,
+                                              ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                      ),
+                    ],
                   ),
-                  IconButton(
-                    onPressed: () {},
-                    icon: const Icon(Icons.search_rounded),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              const _TrackerFieldRow(
-                hint: 'Select Habit',
-                value: 'Shower',
-                isAccent: true,
-              ),
-              const SizedBox(height: 12),
-              const _TrackerFieldRow(hint: 'Chart Frequency', value: 'Month'),
-              const SizedBox(height: 12),
-              const _TrackerFieldRow(hint: 'Show Chart Details', value: 'Off'),
-              const SizedBox(height: 14),
-              Container(
-                height: 168,
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.border),
-                ),
-                child: const _TrackerLineChart(),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  const Icon(
-                    Icons.arrow_back,
-                    color: Color(0xFFCFD8DC),
-                    size: 18,
-                  ),
-                  const SizedBox(width: 14),
-                  Text(
-                    'SEPTEMBER',
-                    style: AppTextStyle.labelMedium.copyWith(
-                      color: const Color(0xFFCFD8DC),
-                      letterSpacing: 4,
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  const Icon(
-                    Icons.arrow_forward,
-                    color: Color(0xFFCFD8DC),
-                    size: 18,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 28),
-              OutlinedButton.icon(
-                onPressed: () => context.go(RouteNames.HOME),
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: AppColors.primary),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 10,
-                  ),
-                ),
-                icon: const Icon(Icons.pie_chart_outline_rounded, size: 18),
-                label: Text(
-                  'Success Status',
-                  style: AppTextStyle.bodyRegular.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
+                );
+              },
         ),
       ),
     );
   }
 }
 
-/// Static row field used to mimic tracker filter controls.
-class _TrackerFieldRow extends StatelessWidget {
-  /// Creates a tracker field row.
-  const _TrackerFieldRow({
-    required this.hint,
-    required this.value,
-    this.isAccent = false,
-  });
+class _MetricRow extends StatelessWidget {
+  const _MetricRow({required this.label, required this.value});
 
-  /// Left side field hint.
-  final String hint;
-
-  /// Right side current value.
+  final String label;
   final String value;
 
-  /// Whether value is highlighted using accent color.
-  final bool isAccent;
-
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 52,
-      padding: const EdgeInsets.symmetric(horizontal: 14),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        children: <Widget>[
-          Expanded(
-            child: Text(
-              hint,
-              style: AppTextStyle.bodyRegular.copyWith(
-                color: AppColors.mutedText.withValues(alpha: 0.72),
-              ),
-            ),
+    return Row(
+      children: <Widget>[
+        Expanded(
+          child: Text(
+            label,
+            style: AppTextStyle.bodySmall.copyWith(color: AppColors.mutedText),
           ),
-          Text(
-            value,
-            style: AppTextStyle.bodyRegular.copyWith(
-              color: isAccent ? AppColors.accent : AppColors.lightOnBackground,
-            ),
-          ),
-        ],
-      ),
+        ),
+        Text(value, style: AppTextStyle.bodyRegular),
+      ],
     );
   }
-}
-
-/// Lightweight custom-painted line chart for tracker preview.
-class _TrackerLineChart extends StatelessWidget {
-  /// Creates tracker line chart.
-  const _TrackerLineChart();
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: _TrackerLinePainter(),
-      child: const SizedBox.expand(),
-    );
-  }
-}
-
-/// Painter that draws a smooth cyan trend line similar to the reference design.
-class _TrackerLinePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final Paint linePaint = Paint()
-      ..color = AppColors.accent
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2
-      ..strokeCap = StrokeCap.round;
-
-    final Path path = Path()
-      ..moveTo(0, size.height * 0.58)
-      ..cubicTo(
-        size.width * 0.10,
-        size.height * 0.90,
-        size.width * 0.18,
-        size.height * 0.12,
-        size.width * 0.34,
-        size.height * 0.44,
-      )
-      ..cubicTo(
-        size.width * 0.42,
-        size.height * 0.66,
-        size.width * 0.52,
-        size.height * 0.22,
-        size.width * 0.62,
-        size.height * 0.50,
-      )
-      ..cubicTo(
-        size.width * 0.74,
-        size.height * 0.84,
-        size.width * 0.86,
-        size.height * 0.18,
-        size.width,
-        size.height * 0.02,
-      );
-
-    canvas.drawPath(path, linePaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

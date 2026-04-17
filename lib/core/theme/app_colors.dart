@@ -6,13 +6,13 @@ final class AppColors {
   const AppColors._();
 
   /// Primary brand color extracted from Figma.
-  static const Color primary = Color(0xFF6C5CE7);
+  static const Color primary = Color(0xFF0F766E);
 
   /// Secondary accent color extracted from Figma.
-  static const Color secondary = Color(0xFFE84393);
+  static const Color secondary = Color(0xFF1D4ED8);
 
   /// Tertiary highlight color extracted from Figma.
-  static const Color accent = Color(0xFF00CEC9);
+  static const Color accent = Color(0xFFF97316);
 
   /// Warning color for attention states.
   static const Color warning = Color(0xFFFDCB6E);
@@ -24,13 +24,13 @@ final class AppColors {
   static const Color error = Color(0xFFE34F4F);
 
   /// Main light background from Figma.
-  static const Color lightBackground = Color(0xFFFAFAFA);
+  static const Color lightBackground = Color(0xFFF5F7FB);
 
   /// Neutral surface used for cards and fields.
   static const Color surface = Color(0xFFFFFFFF);
 
   /// Subtle border/divider neutral tone.
-  static const Color border = Color(0xFFDFE6E9);
+  static const Color border = Color(0xFFD9E1EC);
 
   /// Secondary neutral text color.
   static const Color mutedText = Color(0xFF636E72);
